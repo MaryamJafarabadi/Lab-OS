@@ -21,6 +21,10 @@ main(void)
 
   for(;;){
     printf(1, "init: starting sh\n");
+    printf(1, "Group #08:\n");
+    printf(1, "1. Sana Sari Navaei\n");
+    printf(1, "2. Maryam Jafarabadi Ashtiani\n");
+    printf(1, "3. Bita Nasiri\n");
     pid = fork();
     if(pid < 0){
       printf(1, "init: fork failed\n");
