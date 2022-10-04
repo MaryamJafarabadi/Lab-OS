@@ -195,6 +195,8 @@ consoleintr(int (*getc)(void))
 
   acquire(&cons.lock);
   while((c = getc()) >= 0){
+    int index;
+    char temp[INPUT_BUF];
     switch(c){
     case C('P'):  // Process listing.
       // procdump() locks cons.lock indirectly; invoke later
@@ -213,6 +215,21 @@ consoleintr(int (*getc)(void))
         consputc(BACKSPACE);
       }
       break;
+    case C('N'):
+      index = 0;
+      while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
+        char x = input.buf[(input.e-1) % INPUT_BUF];
+        consputc(BACKSPACE);
+        input.e--;
+        if (x <= '9' && x >= '0')
+          continue;
+        temp[index] = x;
+        index++;
+      }
+      for (int i = index - 1; i >= 0; i--){
+        consputc(temp[i]);
+      }
+      break;        
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
