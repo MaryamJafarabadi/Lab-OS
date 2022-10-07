@@ -13,8 +13,8 @@ int main(int argc, char *argv[]){
         second_num = temp;
     }
     int isPrime;
-    int index = 0;
-    int result[800];
+    unlink("prime_numbers.txt");
+    int fd = open("prime_numbers.txt", O_CREATE | O_RDWR);
 
     for(int i = first_num + 1; i < second_num; i++){
         isPrime = 1;
@@ -25,19 +25,10 @@ int main(int argc, char *argv[]){
             }
         }
         if(isPrime == 1){
-            result[index] = i;
-            index++;
+            printf(fd, "%d ", i);
         }
     }
-
-    unlink("prime_numbers.txt");
-    int fd = open("prime_numbers.txt", O_CREATE | O_RDWR);
-    for(int i = 0; i < index; i++){
-        if(i == index - 1)
-            printf(fd, "%d\n", result[i]);
-        else
-            printf(fd, "%d ", result[i]);
-    }
+    printf(fd, "\n");
     close(fd);
     exit();
 }
