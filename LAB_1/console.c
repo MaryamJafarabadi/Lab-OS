@@ -188,37 +188,22 @@ struct {
 
 #define C(x)  ((x)-'@')  // Control-x
 
+char cmd_history[15][INPUT_BUF];
+int queue_index = 0;
+
 void
 consoleintr(int (*getc)(void))
 {
   int c, doprocdump = 0;
-
+  int index = 0;
+  char temp[INPUT_BUF];
+  char temp2[INPUT_BUF];
   acquire(&cons.lock);
   while((c = getc()) >= 0){
-    int index;
-    char temp[INPUT_BUF];
-    char temp2[INPUT_BUF];
     switch(c){
-    case C('P'):  // Process listing.
-      // procdump() locks cons.lock indirectly; invoke later
-      doprocdump = 1;
-      break;
-    case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    case C('H'): case '\x7f':  // Backspace
-      if(input.e != input.w){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
     case C('N'):
       index = 0;
-      while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
+      while(input.e != input.w && input.buf[(input.e-1) % INPUT_BUF] != '\n'){
         char x = input.buf[(input.e-1) % INPUT_BUF];
         consputc(BACKSPACE);
         input.e--;
@@ -227,7 +212,7 @@ consoleintr(int (*getc)(void))
         temp[index] = x;
         index++;
       }
-      for (int i = index - 1; i >= 0; i--){
+      for(int i = index - 1; i >= 0; i--){
         consputc(temp[i]);
       }
       break;
@@ -243,12 +228,56 @@ consoleintr(int (*getc)(void))
         consputc(temp2[i]);
       }
       break;
+    case C('P'):  // Process listing.
+      // procdump() locks cons.lock indirectly; invoke later
+      doprocdump = 1;
+      break;
+    case C('U'):  // Kill line.
+      while(input.e != input.w &&
+            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+        input.e--;
+        consputc(BACKSPACE);
+      }
+      break;
+    case '\t': {
+      int predicted = -1;
+      for (int i = 0; i < 15; i++){
+        int index = (queue_index-1 - i < 0) ? 15 + queue_index-1 - i : queue_index-1 - i;
+        if (strncmp(input.buf + input.w, cmd_history[index], input.e - input.w) == 0){
+          predicted = index;
+          break;
+        }
+      }
+      if (predicted != -1){
+        while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n'){
+          input.e--;
+          consputc(BACKSPACE);
+        }
+        for (int i = 0; cmd_history[predicted][i] != '\0' && i < INPUT_BUF; i++){
+          consputc(cmd_history[predicted][i]);
+        }
+      }
+    } break;
+    case C('H'):
+    case '\x7f': // Backspace
+      if (input.e != input.w)
+      {
+        input.e--;
+        consputc(BACKSPACE);
+      }
+      break;
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         input.buf[input.e++ % INPUT_BUF] = c;
         consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+        if((c == '\n' || c == C('D') || input.e == input.r + INPUT_BUF)){
+          if(input.e - input.w != 1){
+            memmove(cmd_history[queue_index], input.buf + input.w, input.e - input.w - 1);
+            cmd_history[queue_index][input.e - input.w - 1] = '\0';
+            queue_index++;
+            queue_index %= 15;
+          }
           input.w = input.e;
           wakeup(&input.r);
         }
