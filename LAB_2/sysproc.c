@@ -89,3 +89,10 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_find_largest_prime_factor(void)
+{
+  int n = myproc()->tf->ebp;
+  return find_largest_prime_factor(n);
+}
