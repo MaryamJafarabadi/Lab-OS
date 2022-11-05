@@ -532,3 +532,22 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int
+find_largest_prime_factor(int n)
+{
+  int divisor = 2, result = 0;
+  if (n < 1) return -2;
+  if (n == 1) return -1;
+  while(n != 0)
+  {
+    if(n == 1) return result;
+    else if(n % divisor == 0)
+    {
+      result = n;
+      n = n / divisor;
+    }
+    else divisor++;
+  }
+  return 0;
+}
