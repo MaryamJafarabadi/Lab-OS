@@ -551,3 +551,8 @@ find_largest_prime_factor(int n)
   }
   return 0;
 }
+
+int get_parent_pid(void)
+{
+  return myproc()->parent->pid;
+}
