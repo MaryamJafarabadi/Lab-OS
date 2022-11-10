@@ -96,3 +96,10 @@ sys_find_largest_prime_factor(void)
   int n = myproc()->tf->ebp;
   return find_largest_prime_factor(n);
 }
+
+int
+sys_get_parent_pid(void)
+{
+  cprintf("We are in kernel mode and system call of getting parent pid has called so here we are handling it and return appropriate responses!\n");
+  return get_parent_pid();
+}
