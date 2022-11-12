@@ -94,6 +94,7 @@ int
 sys_find_largest_prime_factor(void)
 {
   int n = myproc()->tf->ebp;
+  cprintf("We are in kernel mode and the system call of finding the largest prime factor has called so here we are handling it and return appropriate response.\n");
   return find_largest_prime_factor(n);
 }
 
