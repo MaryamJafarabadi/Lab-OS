@@ -183,6 +183,8 @@ UPROGS=\
 	_zombie\
 	_prime_numbers\
 	_find_largest_prime_factor\
+	_change_file_size\
+	_pidtest\
 	_get_parent_pid\
 
 fs.img: mkfs README $(UPROGS)
@@ -253,7 +255,7 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
-	prime_numbers.c get_parent_pid.c printf.c umalloc.c\
+	prime_numbers.c get_parent_pid.c change_file_size.c pidtest.c printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 	find_largest_prime_factor.c\
