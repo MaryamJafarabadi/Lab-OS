@@ -442,3 +442,24 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+int
+sys_change_file_size(void)
+{
+  int n;
+  char *path;
+
+  if(argstr(0, &path) < 0 || argint(1, &n) < 0)
+    return -1;
+  begin_op();
+
+  struct inode* ip = create(path, T_FILE, 0, 0);
+  if(ip == 0){  // file not found
+    end_op();
+    return -1;
+  }
+  change_file_size(ip, n);
+  iunlock(ip);
+  end_op();
+  return 0;
+}
