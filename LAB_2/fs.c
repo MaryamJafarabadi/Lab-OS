@@ -668,3 +668,23 @@ nameiparent(char *path, char *name)
 {
   return namex(path, 1, name);
 }
+
+void change_file_size(struct inode* ip, uint file_size)
+{
+  int difference = file_size > ip->size ? file_size - ip->size : ip->size - file_size;
+  int offset = file_size > ip->size ? ip->size : file_size;
+
+  int m;
+  for (int tot = 0; tot < difference; tot += m) // write or delete from file
+  {
+    struct buf* bp = bread(ip->dev, bmap(ip, offset/BSIZE));
+    m = min(difference - tot, BSIZE - offset%BSIZE);
+    memset(bp->data + offset%BSIZE, 0, m);
+    log_write(bp);
+    brelse(bp);
+    offset += m;
+  }
+
+  ip->size = file_size;
+  iupdate(ip);
+}
