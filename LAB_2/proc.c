@@ -556,3 +556,40 @@ int get_parent_pid(void)
 {
   return myproc()->parent->pid;
 }
+
+int callers[SYSCALL_NUM][PIDS_NUM]={0};
+
+void
+add_this_pid(int syscall_number, int pid)
+{
+  callers[syscall_number][callers[syscall_number][SIZE]] = pid;
+  callers[syscall_number][SIZE]++;
+}
+
+void
+print_all_pids(int syscall_number, int size)
+{
+  cprintf("%d", callers[syscall_number][0]);
+  for(int i = 1; i < size; i++)
+  {
+    cprintf(", %d",callers[syscall_number][i]);
+  }
+  cprintf("\n");
+}
+
+int
+get_callers(int syscall_number)
+{
+  int size = callers[syscall_number][SIZE];
+  if(size == 0)
+  {
+    cprintf("There is no process available which has called this system call!\n");
+    return 0;
+  }
+  else
+  if(size > PIDS_NUM - 1)
+    size = PIDS_NUM - 1;
+
+  print_all_pids(syscall_number, size);
+  return 0;
+}
