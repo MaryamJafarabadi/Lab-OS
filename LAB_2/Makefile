@@ -186,6 +186,7 @@ UPROGS=\
 	_change_file_size\
 	_pidtest\
 	_get_parent_pid\
+	_get_callers\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -259,6 +260,7 @@ EXTRA=\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 	find_largest_prime_factor.c\
+	get_callers.c\
 
 dist:
 	rm -rf dist
