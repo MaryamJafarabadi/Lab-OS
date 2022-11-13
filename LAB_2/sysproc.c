@@ -104,3 +104,12 @@ sys_get_parent_pid(void)
   cprintf("We are in kernel mode and system call of getting parent pid has called so here we are handling it and return appropriate responses!\n");
   return get_parent_pid();
 }
+
+int
+sys_get_callers(void)
+{
+  int syscall_number;
+  if(argint(0, &syscall_number) < 0)
+    return -1;
+  return get_callers(syscall_number);
+}
