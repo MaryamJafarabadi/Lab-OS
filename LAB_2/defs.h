@@ -123,6 +123,7 @@ void            wakeup(void*);
 void            yield(void);
 int             find_largest_prime_factor(int);
 int             get_parent_pid(void);
+int             get_callers(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
