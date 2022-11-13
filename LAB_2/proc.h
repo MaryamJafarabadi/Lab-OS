@@ -56,3 +56,10 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+#define SYSCALL_NUM 25
+#define PIDS_NUM 201
+#define SIZE 200
+//201 item maintain the size of the array which is filled;
+
+void add_this_pid(int syscall_number, int pid);
