@@ -728,3 +728,183 @@ get_callers(int syscall_number)
   print_all_pids(syscall_number, size);
   return 0;
 }
+int
+change_process_queue(int pid, int dest_queue)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid)
+    {
+      p->wait = 0;
+      p->level = dest_queue;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+int
+lottery_ticket(int pid, int ticket)
+{
+  struct proc* p;
+  acquire(&ptable.lock);
+  for (p = ptable.proc; p< &ptable.proc[NPROC]; p++)
+  {
+    if(p->pid == pid)
+    {
+      p->ticket = ticket;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+void
+BJF_parameter_process(int pid, int priority_ratio, int arrivaltime_ratio, int execcycle_ratio)
+{
+  struct proc* p;
+  acquire(&ptable.lock);
+  for (p = ptable.proc; p< &ptable.proc[NPROC]; p++)
+  {
+    if(p->pid == pid)
+    {
+      p->priority_ratio = (float)priority_ratio;
+      p->arrivaltime_ratio = (float)arrivaltime_ratio;
+      p->execcycle_ratio = (float)execcycle_ratio;
+    }
+  }
+  release(&ptable.lock);
+}
+
+void
+BJF_parameter_kernel(int priority_ratio, int arrivaltime_ratio, int execcycle_ratio)
+{
+  struct proc* p;
+  for (p = ptable.proc; p< &ptable.proc[NPROC]; p++)
+  {
+    p->priority_ratio = (float)priority_ratio;
+    p->arrivaltime_ratio = (float)arrivaltime_ratio;
+    p->execcycle_ratio = (float)execcycle_ratio;
+  }
+}
+
+void print_space(int used_length, int total_space)
+{
+  int available_space = total_space - used_length;
+  if(available_space>0)
+  {
+    for(int i=0;i<available_space;i++)
+    {
+      cprintf(" ");
+    }
+  }
+}
+
+int nDigits(int i)
+{
+  if (i < 0) i = -i;
+  if (i <         10) return 1;
+  if (i <        100) return 2;
+  if (i <       1000) return 3;
+  if (i <      10000) return 4;
+  if (i <     100000) return 5;
+  if (i <    1000000) return 6;
+  if (i <   10000000) return 7;
+  if (i <  100000000) return 8;
+  if (i < 1000000000) return 9;
+  return 10;
+}
+
+int string_compare(char str1[], char str2[])
+{
+    int ctr=0;
+
+    while(str1[ctr]==str2[ctr])
+    {
+        if(str1[ctr]=='\0' && str2[ctr]=='\0')
+            break;
+        ctr++;
+    }
+    if(str1[ctr]=='\0' && str2[ctr]=='\0')
+        return 0;
+    else
+        return -1;
+}
+
+void print_information()
+{
+  static char *states[] = {
+    [UNUSED]    "UNUSED",
+    [EMBRYO]    "EMBRYO",
+    [SLEEPING]  "SLEEPING",
+    [RUNNABLE]  "RUNNABLE",
+    [RUNNING]   "RUNNING",
+    [ZOMBIE]    "ZOMBIE"
+  };
+  struct proc* p;
+  int x = 17;
+  cprintf("name            pid    state    queue-level    arrivaltime    ticket    P_R    A_R    E_R    rank    cycle\n");
+  cprintf("--------------------------------------------------------------------------------------------------------------\n");
+  //acquire(&ptable.lock);
+  for (p = ptable.proc; p< &ptable.proc[NPROC]; p++)
+  {
+    x = 17;
+    if(strlen(p->name) == 0)
+      continue;
+
+    int rank = (int) p->priority * p->priority_ratio + p->arrivaltime * p->arrivaltime_ratio + p->execcycle * p->execcycle_ratio;
+    char* state = states[p->state];
+
+
+    cprintf("%s", p->name);
+    if(string_compare(p->name, "init") == 0  && string_compare(p->name, "sh") == 0)
+      x = 15;
+    int l = strlen(p->name);
+    print_space(l,16);
+
+    cprintf("%d", p->pid);
+    l = nDigits(p->pid);
+    print_space(l,7);//10
+
+    cprintf("%s", state);
+    l = strlen(state);
+    print_space(l,9);
+
+    cprintf("%d", p->level);
+    l = nDigits(p->level);
+    print_space(l,15);
+
+    cprintf("%d", p->arrivaltime);
+    l = nDigits(p->arrivaltime);
+    print_space(l,x);
+
+    cprintf("%d", p->ticket);
+    l = nDigits(p->ticket);
+    print_space(l,10);
+
+    cprintf("%d", (int) p->priority_ratio);
+    l = nDigits((int)p->priority_ratio);
+    print_space(l,7);
+
+    cprintf("%d", (int) p->arrivaltime_ratio);
+    l = nDigits((int)p->arrivaltime_ratio);
+    print_space(l,7);
+
+    cprintf("%d", (int) p->execcycle_ratio);
+    l = nDigits((int)p->execcycle_ratio);
+    print_space(l,7);
+
+    cprintf("%d", rank);
+    l = nDigits(rank);
+    print_space(l,8);
+
+    cprintf("%d\n", p->cycle);
+
+  }
+  //release(&ptable.lock);
+}
