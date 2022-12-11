@@ -27,6 +27,11 @@ int find_largest_prime_factor(void);
 int change_file_size(char*, int);
 int get_parent_pid(void);
 void get_callers(int);
+int change_process_queue(int, int);
+int lottery_ticket(int, int);
+int BJF_parameter_process(int, int, int, int);
+int BJF_parameter_kernel(int, int, int);
+int print_information(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
