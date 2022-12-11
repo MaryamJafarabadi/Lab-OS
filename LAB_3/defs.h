@@ -124,6 +124,11 @@ void            yield(void);
 int             find_largest_prime_factor(int);
 int             get_parent_pid(void);
 int             get_callers(int);
+int             change_process_queue(int, int);
+int             lottery_ticket(int, int);
+void            BJF_parameter_process(int, int, int, int);
+void            BJF_parameter_kernel(int, int, int);
+void            print_information(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
