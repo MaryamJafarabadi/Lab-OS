@@ -65,6 +65,21 @@ myproc(void) {
   return p;
 }
 
+int rand_number(int n)
+{
+  int random;
+  acquire(&tickslock);
+  random = (ticks * 12456) % n;
+  random = (random * ticks) % n;
+  release(&tickslock);
+  return random + 1;
+}
+
+float get_priority(int n)
+{
+  return 1/n;
+}
+
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -88,7 +103,20 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-
+  p->level = 2;
+  p->cycle = 0;
+  p->wait = 0;
+  p->ticket = rand_number(100);
+  p->priority = get_priority(p->ticket);
+  acquire(&tickslock);
+  p->arrivaltime = ticks;
+  release(&tickslock);
+  p->execcycle = 0;
+  p->cpu_time = 0;
+  p->priority_ratio = 1;
+  p->arrivaltime_ratio = 1;
+  p->execcycle_ratio = 1;
+  
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -311,6 +339,105 @@ wait(void)
   }
 }
 
+struct proc* round_robin(void)
+{
+  struct proc *p, *final= 0;
+  int now = ticks;
+  int max_proc = -1000000;
+  //int proc_available = 0;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if(p->state != RUNNABLE || p->level != 1)
+      continue;
+
+    if(now - p->cpu_time > max_proc)
+    {
+      final = p;
+      max_proc = now - p->cpu_time;
+    }
+    else
+      continue;
+  }
+  return final;
+}
+
+struct proc* get_lottery(void)
+{
+  struct proc *p;
+  struct proc *final = 0;
+  int total_ticket = 0;
+  int rand_ticket = 0;
+  int current_ticket = 0;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if(p->state != RUNNABLE || p->level != 2)
+      continue;
+    total_ticket += p->ticket;
+  }
+
+  if(total_ticket == 0)
+    return 0;
+
+  rand_ticket = ticks % total_ticket;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if(p->state != RUNNABLE || p->level != 2)
+      continue;
+    current_ticket += p->ticket;
+
+    if(rand_ticket < current_ticket)
+    {
+      final = p;
+      break;
+    }
+  }
+  return final;
+}
+
+struct proc* best_job_first(void)
+{
+  struct proc* p, *final = 0;
+  float rank = 0;
+  float min_rank = 10000000;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if (p->state != RUNNABLE || p->level != 3)
+      continue;
+    rank = p->priority * p->priority_ratio + p->arrivaltime * p->arrivaltime_ratio + p->execcycle * p->execcycle_ratio;
+    if(rank < min_rank)
+    {
+      final = p;
+      min_rank = rank;
+    }
+  }
+  return final;
+}
+
+void agging()
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != RUNNABLE)
+      continue;
+    if (p->wait >= 8000)
+    {
+        p->level = 1;
+        p->wait = 0;
+    }
+  }
+}
+
+void waiting()
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if(p->state != RUNNABLE)
+      continue;
+    p->wait++;
+  }
+}
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -325,33 +452,40 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
-  for(;;){
+
+  for(;;)
+  {
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
+    p = round_robin();
+
+    if(p == 0)
+      p = get_lottery();
+
+    if(p == 0)
+      p = best_job_first();
+
+    if(p != 0)
+    {
+      p->cycle++;
       c->proc = p;
       switchuvm(p);
-      p->state = RUNNING;
 
+      p->state = RUNNING;
+      p -> execcycle += 0.1;
+
+      waiting();
+      p->wait = 0;
+      agging();
       swtch(&(c->scheduler), p->context);
       switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
     }
     release(&ptable.lock);
-
   }
 }
 
@@ -387,6 +521,7 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
   myproc()->state = RUNNABLE;
+  myproc()->cpu_time = ticks;
   sched();
   release(&ptable.lock);
 }
