@@ -113,3 +113,53 @@ sys_get_callers(void)
     return -1;
   return get_callers(syscall_number);
 }
+
+int
+sys_change_process_queue(void)
+{
+  int pid, dest_queue;
+  if(argint(0, &pid) < 0 || argint(1, &dest_queue) < 0)
+    return -1;
+
+  return change_process_queue(pid, dest_queue);
+}
+
+int
+sys_lottery_ticket(void)
+{
+  int pid, ticket;
+  if(argint(0, &pid) < 0 || argint(1, &ticket) < 0)
+    return -1;
+
+  return lottery_ticket(pid, ticket);
+}
+
+int
+sys_BJF_parameter_process(void)
+{
+  int pid, priority_ratio, arrivaltime_ratio, execcycle_ratio;
+  if(argint(0, &pid) < 0 || argint(1, &priority_ratio) < 0
+      || argint(2, &arrivaltime_ratio) < 0 || argint(3, &execcycle_ratio) < 0)
+    return -1;
+
+  BJF_parameter_process(pid, priority_ratio, arrivaltime_ratio, execcycle_ratio);
+  return 0;
+}
+
+int
+sys_BJF_parameter_kernel(void)
+{
+  int priority_ratio, arrivaltime_ratio, execcycle_ratio;
+  if(argint(0, &priority_ratio) < 0 || argint(1, &arrivaltime_ratio) < 0 || argint(2, &execcycle_ratio) < 0)
+    return -1;
+
+  BJF_parameter_kernel(priority_ratio, arrivaltime_ratio, execcycle_ratio);
+  return 0;
+}
+
+int
+sys_print_information(void)
+{
+  print_information();
+  return 0;
+}
