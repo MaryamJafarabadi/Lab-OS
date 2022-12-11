@@ -187,6 +187,12 @@ UPROGS=\
 	_pidtest\
 	_get_parent_pid\
 	_get_callers\
+	_change_process_queue\
+	_lottery_ticket\
+	_BJF_P\
+	_BJF_K\
+	_print_info\
+	_foo\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -261,6 +267,8 @@ EXTRA=\
 	.gdbinit.tmpl gdbutil\
 	find_largest_prime_factor.c\
 	get_callers.c\
+	change_process_queue.c lottery_ticket.c BJF_P.c BJF_K.c print_info.c\
+	foo.c\
 
 dist:
 	rm -rf dist
