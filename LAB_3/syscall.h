@@ -24,3 +24,8 @@
 #define SYS_change_file_size   23
 #define SYS_get_parent_pid  24
 #define SYS_get_callers 25
+#define SYS_change_process_queue  26
+#define SYS_lottery_ticket  27
+#define SYS_BJF_parameter_process  28
+#define SYS_BJF_parameter_kernel   29
+#define SYS_print_information 30
