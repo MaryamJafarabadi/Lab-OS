@@ -129,6 +129,9 @@ int             lottery_ticket(int, int);
 void            BJF_parameter_process(int, int, int, int);
 void            BJF_parameter_kernel(int, int, int);
 void            print_information(void);
+int             sem_init(int, int);
+int             sem_acquire(int);
+int             sem_release(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
