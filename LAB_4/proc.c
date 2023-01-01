@@ -908,3 +908,64 @@ void print_information()
   }
   //release(&ptable.lock);
 }
+
+typedef struct
+{
+  int value;
+  int last_index;
+  struct proc *queue[NPROC];
+  struct spinlock lock;
+} Semaphore;
+
+Semaphore semaphore[5];
+
+int sem_init(int i, int v)
+{
+  initlock(&semaphore[i].lock, "semaphore");
+  semaphore[i].value = v;
+  semaphore[i].last_index = 0;
+  return 0;
+}
+
+int sem_acquire(int i)
+{
+  acquire(&semaphore[i].lock);
+  if (semaphore[i].value <= 0)
+  {
+    struct proc *p = myproc();
+    semaphore[i].queue[semaphore[i].last_index] = p;
+    semaphore[i].last_index++;
+    sleep(&semaphore, &semaphore[i].lock);
+  }
+  else
+  {
+    semaphore[i].value--;
+  }
+  if (i != 5)
+  {
+    cprintf("philosopher: %d acquired %d\n", myproc()->pid - 3, i);
+  }
+  release(&semaphore[i].lock);
+  return 0;
+}
+
+int sem_release(int i)
+{
+  if (semaphore[i].last_index > 0)
+  {
+    semaphore[i].last_index--;
+    struct proc *p = semaphore[i].queue[semaphore[i].last_index];
+    acquire(&ptable.lock);
+    p->state = RUNNABLE;
+    release(&ptable.lock);
+  }
+  else
+  {
+    semaphore[i].value++;
+  }
+  if (i != 5)
+  {
+    cprintf("philosopher: %d released %d\n", myproc()->pid - 3, i);
+  }
+  return 0;
+}
