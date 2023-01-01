@@ -112,6 +112,9 @@ extern int sys_lottery_ticket(void);
 extern int sys_BJF_parameter_process(void);
 extern int sys_BJF_parameter_kernel(void);
 extern int sys_print_information(void);
+extern int sys_sem_init(void);
+extern int sys_sem_acquire(void);
+extern int sys_sem_release(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -144,6 +147,9 @@ static int (*syscalls[])(void) = {
 [SYS_BJF_parameter_process]   sys_BJF_parameter_process,
 [SYS_BJF_parameter_kernel]   sys_BJF_parameter_kernel,
 [SYS_print_information]   sys_print_information,
+[SYS_sem_init] sys_sem_init,
+[SYS_sem_acquire] sys_sem_acquire,
+[SYS_sem_release] sys_sem_release,
 };
 
 void
