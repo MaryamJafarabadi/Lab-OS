@@ -29,3 +29,6 @@
 #define SYS_BJF_parameter_process  28
 #define SYS_BJF_parameter_kernel   29
 #define SYS_print_information 30
+#define SYS_sem_acquire 31
+#define SYS_sem_release 32
+#define SYS_sem_init 33
