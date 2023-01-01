@@ -32,6 +32,9 @@ int lottery_ticket(int, int);
 int BJF_parameter_process(int, int, int, int);
 int BJF_parameter_kernel(int, int, int);
 int print_information(void);
+int sem_init(int, int);
+int sem_acquire(int);
+int sem_release(int);
 
 // ulib.c
 int stat(const char*, struct stat*);
