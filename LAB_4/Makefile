@@ -193,6 +193,7 @@ UPROGS=\
 	_BJF_K\
 	_print_info\
 	_foo\
+	_philosopher\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -269,6 +270,7 @@ EXTRA=\
 	get_callers.c\
 	change_process_queue.c lottery_ticket.c BJF_P.c BJF_K.c print_info.c\
 	foo.c\
+	philosopher.c\
 
 dist:
 	rm -rf dist
