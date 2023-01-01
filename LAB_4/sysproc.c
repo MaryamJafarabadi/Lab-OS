@@ -163,3 +163,33 @@ sys_print_information(void)
   print_information();
   return 0;
 }
+
+int 
+sys_sem_init(void)
+{
+  int i, v;
+  if (argint(0, &i) < 0 || argint(1, &v) < 0)
+    return -1;
+
+  return sem_init(i, v);
+}
+
+int 
+sys_sem_acquire(void)
+{
+  int i;
+  if (argint(0, &i) < 0) 
+    return -1;
+
+  return sem_acquire(i);
+}
+
+int 
+sys_sem_release(void)
+{
+  int i;
+  if (argint(0, &i) < 0) 
+    return -1;
+    
+  return sem_release(i);
+}
